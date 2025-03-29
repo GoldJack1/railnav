@@ -1,0 +1,4 @@
+module RailNavPackageTests {
+    header "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavPackageTests.build/RailNavPackageTests-Swift.h"
+    requires objc
+}

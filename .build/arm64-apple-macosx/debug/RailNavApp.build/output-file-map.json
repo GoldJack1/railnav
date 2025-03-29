@@ -1,0 +1,131 @@
+{
+  "": {
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/master.swiftdeps"
+  },
+  "/Users/jackwingate/Desktop/railnav/railnav/App/RailNavApp.swift": {
+    "dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/RailNavApp.d",
+    "object": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/RailNavApp.swift.o",
+    "swiftmodule": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/RailNavApp~partial.swiftmodule",
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/RailNavApp.swiftdeps"
+  },
+  "/Users/jackwingate/Desktop/railnav/railnav/Config.swift": {
+    "dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/Config.d",
+    "object": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/Config.swift.o",
+    "swiftmodule": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/Config~partial.swiftmodule",
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/Config.swiftdeps"
+  },
+  "/Users/jackwingate/Desktop/railnav/railnav/Models/DarwinResponse.swift": {
+    "dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/DarwinResponse.d",
+    "object": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/DarwinResponse.swift.o",
+    "swiftmodule": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/DarwinResponse~partial.swiftmodule",
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/DarwinResponse.swiftdeps"
+  },
+  "/Users/jackwingate/Desktop/railnav/railnav/Models/RDMResponse.swift": {
+    "dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/RDMResponse.d",
+    "object": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/RDMResponse.swift.o",
+    "swiftmodule": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/RDMResponse~partial.swiftmodule",
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/RDMResponse.swiftdeps"
+  },
+  "/Users/jackwingate/Desktop/railnav/railnav/Models/TabItem.swift": {
+    "dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/TabItem.d",
+    "object": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/TabItem.swift.o",
+    "swiftmodule": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/TabItem~partial.swiftmodule",
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/TabItem.swiftdeps"
+  },
+  "/Users/jackwingate/Desktop/railnav/railnav/Models/TrainService.swift": {
+    "dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/TrainService.d",
+    "object": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/TrainService.swift.o",
+    "swiftmodule": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/TrainService~partial.swiftmodule",
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/TrainService.swiftdeps"
+  },
+  "/Users/jackwingate/Desktop/railnav/railnav/Services/DarwinXMLParser.swift": {
+    "dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/DarwinXMLParser.d",
+    "object": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/DarwinXMLParser.swift.o",
+    "swiftmodule": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/DarwinXMLParser~partial.swiftmodule",
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/DarwinXMLParser.swiftdeps"
+  },
+  "/Users/jackwingate/Desktop/railnav/railnav/Services/NetworkService.swift": {
+    "dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/NetworkService.d",
+    "object": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/NetworkService.swift.o",
+    "swiftmodule": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/NetworkService~partial.swiftmodule",
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/NetworkService.swiftdeps"
+  },
+  "/Users/jackwingate/Desktop/railnav/railnav/Services/RealTimeService.swift": {
+    "dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/RealTimeService.d",
+    "object": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/RealTimeService.swift.o",
+    "swiftmodule": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/RealTimeService~partial.swiftmodule",
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/RealTimeService.swiftdeps"
+  },
+  "/Users/jackwingate/Desktop/railnav/railnav/ViewModels/TrainServiceViewModel.swift": {
+    "dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/TrainServiceViewModel.d",
+    "object": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/TrainServiceViewModel.swift.o",
+    "swiftmodule": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/TrainServiceViewModel~partial.swiftmodule",
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/TrainServiceViewModel.swiftdeps"
+  },
+  "/Users/jackwingate/Desktop/railnav/railnav/Views/Components/CustomHeader.swift": {
+    "dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/CustomHeader.d",
+    "object": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/CustomHeader.swift.o",
+    "swiftmodule": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/CustomHeader~partial.swiftmodule",
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/CustomHeader.swiftdeps"
+  },
+  "/Users/jackwingate/Desktop/railnav/railnav/Views/Components/CustomTabBar.swift": {
+    "dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/CustomTabBar.d",
+    "object": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/CustomTabBar.swift.o",
+    "swiftmodule": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/CustomTabBar~partial.swiftmodule",
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/CustomTabBar.swiftdeps"
+  },
+  "/Users/jackwingate/Desktop/railnav/railnav/Views/Components/NavigationBar.swift": {
+    "dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/NavigationBar.d",
+    "object": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/NavigationBar.swift.o",
+    "swiftmodule": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/NavigationBar~partial.swiftmodule",
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/NavigationBar.swiftdeps"
+  },
+  "/Users/jackwingate/Desktop/railnav/railnav/Views/Components/TransitionHelper.swift": {
+    "dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/TransitionHelper.d",
+    "object": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/TransitionHelper.swift.o",
+    "swiftmodule": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/TransitionHelper~partial.swiftmodule",
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/TransitionHelper.swiftdeps"
+  },
+  "/Users/jackwingate/Desktop/railnav/railnav/Views/ExploreView.swift": {
+    "dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/ExploreView.d",
+    "object": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/ExploreView.swift.o",
+    "swiftmodule": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/ExploreView~partial.swiftmodule",
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/ExploreView.swiftdeps"
+  },
+  "/Users/jackwingate/Desktop/railnav/railnav/Views/HomeDetailView.swift": {
+    "dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/HomeDetailView.d",
+    "object": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/HomeDetailView.swift.o",
+    "swiftmodule": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/HomeDetailView~partial.swiftmodule",
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/HomeDetailView.swiftdeps"
+  },
+  "/Users/jackwingate/Desktop/railnav/railnav/Views/HomeView.swift": {
+    "dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/HomeView.d",
+    "object": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/HomeView.swift.o",
+    "swiftmodule": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/HomeView~partial.swiftmodule",
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/HomeView.swiftdeps"
+  },
+  "/Users/jackwingate/Desktop/railnav/railnav/Views/NavigateView.swift": {
+    "dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/NavigateView.d",
+    "object": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/NavigateView.swift.o",
+    "swiftmodule": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/NavigateView~partial.swiftmodule",
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/NavigateView.swiftdeps"
+  },
+  "/Users/jackwingate/Desktop/railnav/railnav/Views/ProfileView.swift": {
+    "dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/ProfileView.d",
+    "object": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/ProfileView.swift.o",
+    "swiftmodule": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/ProfileView~partial.swiftmodule",
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/ProfileView.swiftdeps"
+  },
+  "/Users/jackwingate/Desktop/railnav/railnav/Views/TicketsView.swift": {
+    "dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/TicketsView.d",
+    "object": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/TicketsView.swift.o",
+    "swiftmodule": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/TicketsView~partial.swiftmodule",
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/TicketsView.swiftdeps"
+  },
+  "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/DerivedSources/resource_bundle_accessor.swift": {
+    "dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/resource_bundle_accessor.d",
+    "object": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/resource_bundle_accessor.swift.o",
+    "swiftmodule": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/resource_bundle_accessor~partial.swiftmodule",
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavApp.build/resource_bundle_accessor.swiftdeps"
+  }
+}

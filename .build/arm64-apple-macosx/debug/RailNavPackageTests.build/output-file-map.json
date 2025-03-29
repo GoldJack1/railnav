@@ -1,0 +1,11 @@
+{
+  "": {
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavPackageTests.build/master.swiftdeps"
+  },
+  "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavPackageTests.derived/runner.swift": {
+    "dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavPackageTests.build/runner.d",
+    "object": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavPackageTests.build/runner.swift.o",
+    "swiftmodule": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavPackageTests.build/runner~partial.swiftmodule",
+    "swift-dependencies": "/Users/jackwingate/Desktop/railnav/.build/arm64-apple-macosx/debug/RailNavPackageTests.build/runner.swiftdeps"
+  }
+}
