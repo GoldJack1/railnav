@@ -1,60 +1,10 @@
 import SwiftUI
 import OSLog
 
-class NavigateViewModel: ObservableObject {
-    let darwinService: DarwinService
-    private let stationCode = "DEW"
-    private let logger = Logger(subsystem: "com.railnav", category: "NavigateViewModel")
-    
-    @Published var departureBoard: DepartureBoard?
-    @Published var isLoading = false
-    @Published var error: Error?
-    
-    init(darwinService: DarwinService) {
-        self.darwinService = darwinService
-        logger.info("NavigateViewModel initialized")
-    }
-    
-    @MainActor
-    func fetchDepartures() async {
-        logger.info("Starting to fetch departures for \(self.stationCode)")
-        isLoading = true
-        error = nil
-        
-        do {
-            logger.info("Making request to DarwinService...")
-            departureBoard = try await darwinService.getDepartureBoard(for: self.stationCode)
-            logger.info("Successfully fetched departures")
-            if let count = departureBoard?.services.count {
-                logger.info("Received \(count) services")
-            } else {
-                logger.warning("Departure board is empty")
-            }
-        } catch {
-            self.error = error
-            logger.error("Failed to fetch departures: \(error.localizedDescription)")
-            if let nsError = error as NSError? {
-                logger.error("Error domain: \(nsError.domain), code: \(nsError.code)")
-                if let underlyingError = nsError.userInfo[NSUnderlyingErrorKey] as? Error {
-                    logger.error("Underlying error: \(underlyingError)")
-                }
-            }
-        }
-        
-        isLoading = false
-    }
-    
-    func refreshData() {
-        logger.info("Manual refresh triggered")
-        Task {
-            await fetchDepartures()
-        }
-    }
-}
-
 struct NavigateView: View {
     @StateObject private var viewModel: NavigateViewModel
     @Binding var selectedTab: TabItem
+    @FocusState private var isSearchFocused: Bool
     
     init(selectedTab: Binding<TabItem>) {
         self._selectedTab = selectedTab
@@ -62,58 +12,152 @@ struct NavigateView: View {
     }
     
     var body: some View {
-        ZStack {
-            if viewModel.isLoading {
-                ProgressView("Loading departures...")
-            } else if let error = viewModel.error {
-                VStack {
-                    Image(systemName: "exclamationmark.triangle")
-                        .font(.largeTitle)
-                        .foregroundColor(.red)
-                    Text("Error loading departures")
-                        .font(.headline)
-                    Text(error.localizedDescription)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                    Button("Try Again") {
-                        viewModel.refreshData()
-                    }
-                    .buttonStyle(.bordered)
-                }
-            } else if let board = viewModel.departureBoard {
-                VStack {
-                    HStack {
-                        Text("Departures from \(board.station.name)")
-                            .font(.title2)
-                            .bold()
-                        Spacer()
-                        Button {
-                            viewModel.refreshData()
-                        } label: {
-                            Image(systemName: "arrow.clockwise")
+        NavigationView {
+            ZStack {
+                Color(UIColor.systemBackground)
+                    .edgesIgnoringSafeArea(.all)
+                
+                VStack(spacing: 16) {
+                    // Search Bar with Button
+                    HStack(spacing: 12) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundColor(.secondary)
+                            
+                            TextField("Search stations...", text: $viewModel.searchQuery)
+                                .textFieldStyle(PlainTextFieldStyle())
+                                .focused($isSearchFocused)
+                                .submitLabel(.search)
+                                .autocorrectionDisabled()
+                                .textInputAutocapitalization(.never)
+                                .onChange(of: viewModel.searchQuery) { _ in
+                                    viewModel.searchStations()
+                                }
+                                .onSubmit {
+                                    if let firstResult = viewModel.searchResults.first {
+                                        viewModel.selectStation(firstResult)
+                                        isSearchFocused = false
+                                    }
+                                }
+                            
+                            if !viewModel.searchQuery.isEmpty {
+                                Button(action: {
+                                    viewModel.searchQuery = ""
+                                    viewModel.searchResults = []
+                                    isSearchFocused = false
+                                }) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundColor(.secondary)
+                                }
+                            }
                         }
+                        .padding()
+                        .background(Color(UIColor.secondarySystemBackground))
+                        .cornerRadius(12)
+                        
+                        // Search Button
+                        Button(action: {
+                            if let firstResult = viewModel.searchResults.first {
+                                viewModel.selectStation(firstResult)
+                                isSearchFocused = false
+                            }
+                        }) {
+                            Text("Search")
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .background(
+                                    !viewModel.searchResults.isEmpty ?
+                                    Color.accentColor :
+                                    Color.gray
+                                )
+                                .cornerRadius(12)
+                        }
+                        .disabled(viewModel.searchResults.isEmpty)
                     }
                     .padding(.horizontal)
                     
-                    List {
-                        ForEach(board.services, id: \.id) { service in
-                            NavigationLink {
-                                ServiceDetailView(service: service, darwinService: viewModel.darwinService)
-                            } label: {
-                                DepartureRow(service: service)
+                    if !viewModel.searchResults.isEmpty {
+                        // Search Results
+                        ScrollView {
+                            LazyVStack(spacing: 12) {
+                                ForEach(viewModel.searchResults) { station in
+                                    Button(action: {
+                                        viewModel.selectStation(station)
+                                        isSearchFocused = false
+                                    }) {
+                                        HStack {
+                                            VStack(alignment: .leading, spacing: 4) {
+                                                Text(station.name)
+                                                    .font(.headline)
+                                                    .foregroundColor(.primary)
+                                                Text(station.id)
+                                                    .font(.subheadline)
+                                                    .foregroundColor(.secondary)
+                                            }
+                                            Spacer()
+                                            Image(systemName: "chevron.right")
+                                                .foregroundColor(.secondary)
+                                        }
+                                        .padding()
+                                        .background(Color(UIColor.secondarySystemBackground))
+                                        .cornerRadius(12)
+                                    }
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
+                    } else if let board = viewModel.departureBoard {
+                        VStack(alignment: .leading, spacing: 20) {
+                            // Station Info with Refresh Button
+                            HStack(alignment: .center) {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text(board.station.name)
+                                        .font(.system(size: 32, weight: .bold))
+                                    Text("Live Departures")
+                                        .font(.system(size: 18, weight: .medium))
+                                        .foregroundColor(.secondary)
+                                }
+                                
+                                Spacer()
+                                
+                                Button(action: {
+                                    viewModel.refreshData()
+                                }) {
+                                    Image(systemName: "arrow.clockwise")
+                                        .font(.title2)
+                                        .foregroundColor(.accentColor)
+                                }
+                            }
+                            .padding(.horizontal)
+                            
+                            // Departures List
+                            ScrollView {
+                                LazyVStack(spacing: 12) {
+                                    ForEach(board.services) { service in
+                                        NavigationLink {
+                                            ServiceDetailView(service: service, darwinService: viewModel.darwinService)
+                                        } label: {
+                                            ModernDepartureRow(service: service)
+                                        }
+                                    }
+                                }
+                                .padding(.horizontal)
                             }
                         }
-                    }
-                    .refreshable {
-                        await viewModel.fetchDepartures()
+                    } else if viewModel.isLoading {
+                        Spacer()
+                        ProgressView()
+                            .scaleEffect(1.5)
+                        Spacer()
+                    } else if let error = viewModel.error {
+                        ErrorView(error: error, onRetry: { viewModel.refreshData() })
                     }
                 }
-            } else {
-                Text("No departures found")
-                    .foregroundColor(.secondary)
+                .padding(.top, 70)
             }
+            .navigationBarTitleDisplayMode(.inline)
         }
         .task {
             await viewModel.fetchDepartures()
@@ -121,60 +165,95 @@ struct NavigateView: View {
     }
 }
 
-struct DepartureRow: View {
+struct ModernDepartureRow: View {
     let service: TrainService
     
+    private var delayStatus: DelayStatus {
+        if service.isCancelled {
+            return .cancelled
+        }
+        
+        guard let scheduled = service.scheduledDeparture,
+              let estimated = service.estimatedDeparture else {
+            return .onTime
+        }
+        
+        let delayInMinutes = Calendar.current.dateComponents([.minute], 
+            from: scheduled, to: estimated).minute ?? 0
+        
+        if delayInMinutes <= 0 {
+            return .onTime
+        } else if delayInMinutes < 10 {
+            return .delayed
+        } else {
+            return .severeDelay
+        }
+    }
+    
+    private var statusColor: Color {
+        switch delayStatus {
+        case .onTime:
+            return .green
+        case .delayed:
+            return .orange
+        case .severeDelay, .cancelled:
+            return .red
+        }
+    }
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
+        HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                // First row: Destination
                 Text(service.destination.name)
                     .font(.headline)
-                Spacer()
-                if let platform = service.platform {
-                    Text("Platform \(platform)")
-                        .font(.subheadline)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 2)
-                        .background(Color.blue.opacity(0.2))
-                        .cornerRadius(4)
-                }
-            }
-            
-            HStack {
+                    .foregroundColor(.primary)
+                
+                // Second row: Operator
                 Text(service.operatingCompany)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
-                Spacer()
-                if service.isCancelled {
-                    Text("Cancelled")
-                        .foregroundColor(.red)
-                        .font(.system(.subheadline, design: .monospaced))
-                } else {
-                    HStack(spacing: 4) {
-                        Text(formatTime(service.scheduledDeparture))
-                            .strikethrough(service.isDelayed)
-                        if service.isDelayed {
-                            Text(formatTime(service.estimatedDeparture))
-                                .foregroundColor(.red)
-                        }
-                    }
-                    .font(.system(.subheadline, design: .monospaced))
+                
+                // Third row: Platform
+                if let platform = service.platform {
+                    Text("Platform \(platform)")
+                        .font(.subheadline)
+                        .foregroundColor(.blue)
                 }
             }
             
-            if let delayReason = service.delayReason {
-                Text(delayReason)
-                    .font(.caption)
-                    .foregroundColor(.red)
+            Spacer()
+            
+            // Time display
+            if service.isCancelled {
+                Text("CANCELLED")
+                    .font(.system(.headline, design: .monospaced))
+                    .foregroundColor(statusColor)
+            } else {
+                VStack(alignment: .trailing, spacing: 0) {
+                    // Scheduled time (gray if delayed)
+                    Text(formatTime(service.scheduledDeparture))
+                        .foregroundColor(service.isDelayed ? .secondary : statusColor)
+                        .strikethrough(service.isDelayed)
+                    
+                    // Actual time if delayed
+                    if service.isDelayed, let estimated = service.estimatedDeparture {
+                        Text(formatTime(estimated))
+                            .foregroundColor(statusColor)
+                    }
+                }
+                .font(.system(.headline, design: .monospaced))
             }
             
-            if let cancelReason = service.cancelReason {
-                Text(cancelReason)
-                    .font(.caption)
-                    .foregroundColor(.red)
-            }
+            // Chevron
+            Image(systemName: "chevron.right")
+                .font(.system(.body, weight: .medium))
+                .foregroundColor(.secondary)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 12)
+        .padding(.horizontal)
+        .background(Color(UIColor.secondarySystemBackground))
+        .cornerRadius(12)
     }
     
     private func formatTime(_ date: Date?) -> String {
@@ -182,6 +261,36 @@ struct DepartureRow: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         return formatter.string(from: date)
+    }
+}
+
+private enum DelayStatus {
+    case onTime
+    case delayed
+    case severeDelay
+    case cancelled
+}
+
+struct ErrorView: View {
+    let error: Error
+    let onRetry: () -> Void
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 50))
+                .foregroundColor(.red)
+            Text("Error loading departures")
+                .font(.headline)
+            Text(error.localizedDescription)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding()
+            Button("Try Again", action: onRetry)
+                .buttonStyle(.bordered)
+        }
+        .padding()
     }
 }
 

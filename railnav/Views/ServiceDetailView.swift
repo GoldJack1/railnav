@@ -139,10 +139,20 @@ struct ServiceDetailView: View {
                         statusBadge
                     }
                     
-                    Text(displayService.operatingCompany)
-                        .foregroundColor(.secondary)
+                    HStack {
+                        Text(displayService.operatingCompany)
+                        if !displayService.operatorCode.isEmpty {
+                            Text("(\(displayService.operatorCode))")
+                        }
+                    }
+                    .foregroundColor(.secondary)
                     
-                    if let platform = displayService.platform {
+                    if displayService.isCircularRoute {
+                        Label("Circular Route", systemImage: "arrow.triangle.2.circlepath")
+                            .foregroundColor(.blue)
+                    }
+                    
+                    if let platform = displayService.platform, !displayService.isPlatformHidden {
                         Text("Platform \(platform)")
                             .font(.headline)
                             .padding(.horizontal, 12)
@@ -155,41 +165,89 @@ struct ServiceDetailView: View {
             
             // Times
             Section("Times") {
-                HStack {
-                    Text("Scheduled")
-                    Spacer()
-                    Text(formatTime(displayService.scheduledDeparture))
-                        .monospacedDigit()
+                if let scheduled = displayService.scheduledDeparture {
+                    HStack {
+                        Text("Scheduled Departure")
+                        Spacer()
+                        Text(formatTime(scheduled))
+                            .monospacedDigit()
+                    }
+                    
+                    if displayService.isDelayed {
+                        HStack {
+                            Text("Estimated Departure")
+                                .foregroundColor(.red)
+                            Spacer()
+                            Text(formatTime(displayService.estimatedDeparture))
+                                .monospacedDigit()
+                                .foregroundColor(.red)
+                        }
+                    }
+                    
+                    if let actual = displayService.actualDeparture {
+                        HStack {
+                            Text("Actual Departure")
+                                .foregroundColor(.green)
+                            Spacer()
+                            Text(formatTime(actual))
+                                .monospacedDigit()
+                                .foregroundColor(.green)
+                        }
+                    }
                 }
                 
-                if displayService.isDelayed {
+                if let scheduled = displayService.scheduledArrival {
                     HStack {
-                        Text("Estimated")
-                            .foregroundColor(.red)
+                        Text("Scheduled Arrival")
                         Spacer()
-                        Text(formatTime(displayService.estimatedDeparture))
+                        Text(formatTime(scheduled))
                             .monospacedDigit()
-                            .foregroundColor(.red)
+                    }
+                    
+                    if let estimated = displayService.estimatedArrival {
+                        HStack {
+                            Text("Estimated Arrival")
+                                .foregroundColor(.red)
+                            Spacer()
+                            Text(formatTime(estimated))
+                                .monospacedDigit()
+                                .foregroundColor(.red)
+                        }
+                    }
+                    
+                    if let actual = displayService.actualArrival {
+                        HStack {
+                            Text("Actual Arrival")
+                                .foregroundColor(.green)
+                            Spacer()
+                            Text(formatTime(actual))
+                                .monospacedDigit()
+                                .foregroundColor(.green)
+                        }
                     }
                 }
             }
             
             // Coach Information
             if let coaches = displayService.coaches, !coaches.isEmpty {
-                Section {
+                Section("Coaches") {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: -2) {
                             ForEach(Array(coaches.enumerated()), id: \.element.number) { index, coach in
                                 VStack(spacing: 4) {
-                                    Text(coach.number)
-                                        .font(.caption.bold())
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 2)
-                                        .background(Color.blue.opacity(0.1))
-                                        .cornerRadius(4)
+                                    HStack(spacing: 4) {
+                                        Text(coach.number)
+                                            .font(.caption.bold())
+                                        Text(coach.class == .first ? "1st" : "Std")
+                                            .font(.caption)
+                                            .foregroundColor(coach.class == .first ? .yellow : .gray)
+                                    }
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(Color.blue.opacity(0.1))
+                                    .cornerRadius(4)
                                     
                                     HStack(spacing: 0) {
-                                        // Coach icon with capacity color
                                         Image(systemName: index == coaches.count - 1 ? "train.side.front.car" : 
                                                (index == 0 ? "train.side.rear.car" : "train.side.middle.car"))
                                             .font(.title2)
@@ -204,7 +262,6 @@ struct ServiceDetailView: View {
                                             } ?? .gray)
                                     }
                                     
-                                    // Toilet indicator only
                                     if let toilet = coach.toilet {
                                         Image(systemName: toilet.isAvailable ? "toilet" : "toilet.fill")
                                             .foregroundColor(toilet.isAvailable ? .green : .red)
