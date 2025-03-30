@@ -12,10 +12,10 @@ struct SOAPEnvelope: Decodable {
 }
 
 struct SOAPBody: Decodable {
-    let GetArrBoardWithDetailsResponse: GetArrBoardWithDetailsResponse
+    let GetDepBoardWithDetailsResponse: GetDepBoardWithDetailsResponse
 }
 
-struct GetArrBoardWithDetailsResponse: Decodable {
+struct GetDepBoardWithDetailsResponse: Decodable {
     let GetStationBoardResult: StationBoard
 }
 
@@ -25,6 +25,7 @@ struct StationBoard: Decodable {
     let crs: String
     let platformAvailable: Bool
     let trainServices: TrainServices?
+    let busServices: TrainServices?  // Uses same structure as train services
     
     private enum CodingKeys: String, CodingKey {
         case generatedAt = "lt4:generatedAt"
@@ -32,6 +33,7 @@ struct StationBoard: Decodable {
         case crs = "lt4:crs"
         case platformAvailable = "lt4:platformAvailable"
         case trainServices = "lt8:trainServices"
+        case busServices = "lt8:busServices"
     }
 }
 
@@ -44,8 +46,8 @@ struct TrainServices: Decodable {
 }
 
 struct Service: Decodable {
-    let sta: String
-    let eta: String
+    let std: String
+    let etd: String
     let platform: String?
     let operator_: String
     let operatorCode: String
@@ -53,10 +55,13 @@ struct Service: Decodable {
     let serviceID: String
     let origin: LocationContainer
     let destination: LocationContainer
+    let isCancelled: Bool?
+    let delayReason: String?
+    let cancelReason: String?
     
     private enum CodingKeys: String, CodingKey {
-        case sta = "lt4:sta"
-        case eta = "lt4:eta"
+        case std = "lt4:std"
+        case etd = "lt4:etd"
         case platform = "lt4:platform"
         case operator_ = "lt4:operator"
         case operatorCode = "lt4:operatorCode"
@@ -64,6 +69,9 @@ struct Service: Decodable {
         case serviceID = "lt4:serviceID"
         case origin = "lt5:origin"
         case destination = "lt5:destination"
+        case isCancelled = "lt4:isCancelled"
+        case delayReason = "lt4:delayReason"
+        case cancelReason = "lt4:cancelReason"
     }
 }
 
@@ -385,50 +393,31 @@ class OpenLDBWSClient {
         logger.info("Getting departure board for station: \(station)")
         
         let body = """
-        <ldb:GetArrBoardWithDetailsRequest>
+        <ldb:GetDepBoardWithDetailsRequest>
             <ldb:numRows>10</ldb:numRows>
             <ldb:crs>\(station)</ldb:crs>
             <ldb:timeOffset>0</ldb:timeOffset>
             <ldb:timeWindow>120</ldb:timeWindow>
-        </ldb:GetArrBoardWithDetailsRequest>
+        </ldb:GetDepBoardWithDetailsRequest>
         """
         
-        let request = buildRequest(for: "http://thalesgroup.com/RTTI/2015-05-14/ldb/GetArrBoardWithDetails", body: body)
+        let request = buildRequest(for: "http://thalesgroup.com/RTTI/2015-05-14/ldb/GetDepBoardWithDetails", body: body)
         
         do {
-            let (data, response) = try await session.data(for: request)
+            let (data, response) = try await URLSession.shared.data(for: request)
             
             guard let httpResponse = response as? HTTPURLResponse else {
-                logger.error("Invalid response type")
                 throw OpenLDBWSError.invalidResponse
             }
             
-            logger.info("Received response with status code: \(httpResponse.statusCode)")
-            
-            if httpResponse.statusCode != 200 {
-                if let responseString = String(data: data, encoding: .utf8) {
-                    logger.error("Server error response: \(responseString)")
-                    if responseString.contains("soap:Fault") {
-                        // Extract SOAP fault details
-                        if let faultString = extractSOAPFault(from: responseString) {
-                            throw OpenLDBWSError.serverError(statusCode: httpResponse.statusCode, message: faultString)
-                        }
-                    }
-                }
-                throw OpenLDBWSError.serverError(statusCode: httpResponse.statusCode, message: "Unknown server error")
-            }
-            
-            if let responseString = String(data: data, encoding: .utf8) {
-                logger.debug("Response body: \(responseString)")
+            guard httpResponse.statusCode == 200 else {
+                throw OpenLDBWSError.httpError(httpResponse.statusCode)
             }
             
             return try parseGetBoardResponse(data)
-        } catch let error as OpenLDBWSError {
-            logger.error("OpenLDBWS error: \(error.localizedDescription)")
-            throw error
         } catch {
-            logger.error("Network error: \(error.localizedDescription)")
-            throw OpenLDBWSError.networkError(error)
+            logger.error("Failed to get departure board: \(error)")
+            throw error
         }
     }
     
@@ -481,53 +470,25 @@ class OpenLDBWSClient {
             let envelope = try decoder.decode(SOAPEnvelope.self, from: data)
             logger.info("Successfully decoded SOAP envelope")
             
-            let board = envelope.Body.GetArrBoardWithDetailsResponse.GetStationBoardResult
-            logger.info("Got station board for \(board.locationName) (\(board.crs)) with \(board.trainServices?.service.count ?? 0) services")
+            let board = envelope.Body.GetDepBoardWithDetailsResponse.GetStationBoardResult
+            logger.info("Got station board for \(board.locationName) (\(board.crs))")
             
             let station = DomainStation(id: board.crs, name: board.locationName)
             
+            // Process train services
             let trainServices: [DomainTrainService] = board.trainServices?.service.map { service in
-                logger.debug("Processing service \(service.serviceID) from \(service.origin.location[0].locationName) to \(service.destination.location[0].locationName)")
-                
-                let origin = DomainStation(id: service.origin.location[0].crs,
-                                   name: service.origin.location[0].locationName)
-                
-                let destination = DomainStation(id: service.destination.location[0].crs,
-                                        name: service.destination.location[0].locationName)
-                
-                let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = "HH:mm"
-                
-                let scheduledDeparture = dateFormatter.date(from: service.sta)
-                var estimatedDeparture: Date? = nil
-                if service.eta != "On time" {
-                    estimatedDeparture = dateFormatter.date(from: service.eta)
-                }
-                
-                return DomainTrainService(id: service.serviceID,
-                                  origin: origin,
-                                  destination: destination,
-                                  operatingCompany: service.operator_,
-                                  operatorCode: service.operatorCode,
-                                  scheduledDeparture: scheduledDeparture,
-                                  estimatedDeparture: estimatedDeparture,
-                                  actualDeparture: nil as Date?,
-                                  scheduledArrival: nil as Date?,
-                                  estimatedArrival: nil as Date?,
-                                  actualArrival: nil as Date?,
-                                  platform: service.platform,
-                                  isPlatformHidden: false,
-                                  status: service.eta == "On time" ? .onTime : .delayed,
-                                  isCircularRoute: false,
-                                  isCancelled: service.eta == "Cancelled",
-                                  isDelayed: service.eta != "On time",
-                                  delayReason: nil as String?,
-                                  cancelReason: nil as String?,
-                                  callingPoints: [],
-                                  coaches: nil as [DomainCoach]?,
-                                  serviceMessages: [],
-                                  currentStation: station)
+                processService(service, station: station, type: "train")
             } ?? []
+            
+            // Process bus services
+            let busServices: [DomainTrainService] = board.busServices?.service.map { service in
+                processService(service, station: station, type: "bus")
+            } ?? []
+            
+            // Combine and sort all services by scheduled departure time
+            let allServices = (trainServices + busServices).sorted { 
+                ($0.scheduledDeparture ?? Date.distantFuture) < ($1.scheduledDeparture ?? Date.distantFuture)
+            }
             
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSZZZZZ"
@@ -535,7 +496,7 @@ class OpenLDBWSClient {
             
             return DomainDepartureBoard(station: station,
                                 generatedAt: generatedAt,
-                                services: trainServices,
+                                services: allServices,
                                 messages: [],
                                 filterStation: nil as DomainStation?)
             
@@ -543,6 +504,52 @@ class OpenLDBWSClient {
             logger.error("Failed to parse board response: \(error)")
             throw OpenLDBWSError.parsingError(error)
         }
+    }
+    
+    private func processService(_ service: Service, station: DomainStation, type: String) -> DomainTrainService {
+        logger.debug("Processing \(type) service \(service.serviceID) from \(service.origin.location[0].locationName) to \(service.destination.location[0].locationName)")
+        
+        let origin = DomainStation(id: service.origin.location[0].crs,
+                           name: service.origin.location[0].locationName)
+        
+        let destination = DomainStation(id: service.destination.location[0].crs,
+                                name: service.destination.location[0].locationName)
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "HH:mm"
+        
+        let scheduledDeparture = dateFormatter.date(from: service.std)
+        var estimatedDeparture: Date? = nil
+        if service.etd != "On time" && service.etd != "Cancelled" {
+            estimatedDeparture = dateFormatter.date(from: service.etd)
+        }
+        
+        let isCancelled = service.isCancelled ?? false || service.etd == "Cancelled"
+        let isDelayed = !isCancelled && service.etd != "On time"
+        
+        return DomainTrainService(id: service.serviceID,
+                          origin: origin,
+                          destination: destination,
+                          operatingCompany: service.operator_,
+                          operatorCode: service.operatorCode,
+                          scheduledDeparture: scheduledDeparture,
+                          estimatedDeparture: estimatedDeparture,
+                          actualDeparture: nil as Date?,
+                          scheduledArrival: nil as Date?,
+                          estimatedArrival: nil as Date?,
+                          actualArrival: nil as Date?,
+                          platform: service.platform,
+                          isPlatformHidden: false,
+                          status: isCancelled ? .cancelled : (isDelayed ? .delayed : .onTime),
+                          isCircularRoute: false,
+                          isCancelled: isCancelled,
+                          isDelayed: isDelayed,
+                          delayReason: service.delayReason,
+                          cancelReason: service.cancelReason,
+                          callingPoints: [],
+                          coaches: nil as [DomainCoach]?,
+                          serviceMessages: [],
+                          currentStation: station)
     }
     
     private func parseGetServiceDetailsResponse(_ data: Data) throws -> DomainTrainService {
@@ -690,6 +697,7 @@ enum OpenLDBWSError: LocalizedError {
     case serverError(statusCode: Int, message: String)
     case parsingError(Error)
     case networkError(Error)
+    case httpError(Int)
     
     var errorDescription: String? {
         switch self {
@@ -701,6 +709,8 @@ enum OpenLDBWSError: LocalizedError {
             return "Failed to parse response: \(error.localizedDescription)"
         case .networkError(let error):
             return "Network error: \(error.localizedDescription)"
+        case .httpError(let statusCode):
+            return "HTTP error (status \(statusCode))"
         }
     }
 } 
