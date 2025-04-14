@@ -30,7 +30,7 @@ struct NavigateView: View {
                                 .submitLabel(.search)
                                 .autocorrectionDisabled()
                                 .textInputAutocapitalization(.never)
-                                .onChange(of: viewModel.searchQuery) { _ in
+                                .onChange(of: viewModel.searchQuery) { oldValue, newValue in
                                     viewModel.searchStations()
                                 }
                                 .onSubmit {

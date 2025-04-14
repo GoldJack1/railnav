@@ -412,8 +412,8 @@ struct CallingPointRow: View {
         ServiceDetailView(
             service: TrainService(
                 id: "TEST",
-                origin: Station(id: "DEW", name: "Dewsbury"),
-                destination: Station(id: "LDS", name: "Leeds"),
+                origin: StationData.stations.first(where: { $0.id == "DEW" }) ?? Station(id: "DEW", name: "Dewsbury", latitude: 53.6925, longitude: -1.6280),
+                destination: StationData.stations.first(where: { $0.id == "LDS" }) ?? Station(id: "LDS", name: "Leeds", latitude: 53.7947, longitude: -1.5484),
                 operatingCompany: "Northern",
                 operatorCode: "NT",
                 scheduledDeparture: Date(),
@@ -432,7 +432,7 @@ struct CallingPointRow: View {
                 cancelReason: nil,
                 callingPoints: [
                     CallingPoint(
-                        station: Station(id: "BTL", name: "Batley"),
+                        station: StationData.stations.first(where: { $0.id == "BTL" }) ?? Station(id: "BTL", name: "Batley", latitude: 53.7167, longitude: -1.6333),
                         scheduledTime: Date().addingTimeInterval(300),
                         estimatedTime: Date().addingTimeInterval(600),
                         actualTime: nil,
@@ -453,7 +453,7 @@ struct CallingPointRow: View {
                         category: .serviceMessage
                     )
                 ],
-                currentStation: Station(id: "DEW", name: "Dewsbury")
+                currentStation: StationData.stations.first(where: { $0.id == "DEW" }) ?? Station(id: "DEW", name: "Dewsbury", latitude: 53.6925, longitude: -1.6280)
             ),
             darwinService: DarwinService(apiKey: Config.openLDBWSApiKey)
         )

@@ -1,44 +1,94 @@
 import Foundation
+import os
 
-struct StationData {
-    static let stations: [Station] = [
-        Station(id: "LDS", name: "Leeds"),
-        Station(id: "DEW", name: "Dewsbury"),
-        Station(id: "HUD", name: "Huddersfield"),
-        Station(id: "MAN", name: "Manchester Piccadilly"),
-        Station(id: "MCV", name: "Manchester Victoria"),
-        Station(id: "LIV", name: "Liverpool Lime Street"),
-        Station(id: "YRK", name: "York"),
-        Station(id: "KGX", name: "London Kings Cross"),
-        Station(id: "EUS", name: "London Euston"),
-        Station(id: "PAD", name: "London Paddington"),
-        Station(id: "BHM", name: "Birmingham New Street"),
-        Station(id: "GLC", name: "Glasgow Central"),
-        Station(id: "EDB", name: "Edinburgh Waverley"),
-        Station(id: "BTL", name: "Batley"),
-        Station(id: "MRF", name: "Morley"),
-        Station(id: "WKF", name: "Wakefield Westgate"),
-        Station(id: "SHF", name: "Sheffield"),
-        Station(id: "NCL", name: "Newcastle"),
-        Station(id: "LBA", name: "Leeds Bradford Airport"),
-        Station(id: "BFD", name: "Bradford Interchange")
-    ]
+@Observable
+class StationData {
+    private static let logger = Logger(subsystem: "com.railnav", category: "StationData")
+    private static var cachedStations: [Station]?
     
-    static func search(_ query: String) -> [Station] {
-        let lowercaseQuery = query.lowercased()
-        
-        // If the query is exactly 3 characters, prioritize CRS code matches
-        if query.count == 3 {
-            let exactCRSMatches = stations.filter { $0.id.lowercased() == lowercaseQuery }
-            if !exactCRSMatches.isEmpty {
-                return exactCRSMatches
+    static var stations: [Station] {
+        get {
+            if let cached = cachedStations {
+                return cached
             }
-        }
-        
-        // Search both name and CRS code
-        return stations.filter { station in
-            station.name.lowercased().contains(lowercaseQuery) ||
-            station.id.lowercased().contains(lowercaseQuery)
+            
+            let stationList = Stationcodelist.stations
+            let stations = stationList.map { station in
+                Station(
+                    id: station.crsCode,
+                    name: station.stationName,
+                    latitude: station.latitude,
+                    longitude: station.longitude,
+                    iataAirportCode: station.iataAirportCode,
+                    manager: nil,
+                    managerCode: nil,
+                    isPlatformsHidden: false,
+                    isServicesAvailable: true
+                )
+            }
+            cachedStations = stations
+            return stations
         }
     }
-} 
+    
+    static func clearCache() {
+        cachedStations = nil
+        Stationcodelist.clearCache()
+    }
+    
+    static func search(_ query: String) -> [Station] {
+        guard !query.isEmpty else { return [] }
+        
+        // Normalize the search query
+        let normalizedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !normalizedQuery.isEmpty else { return [] }
+        
+        // Get all stations
+        let allStations = Self.stations
+        
+        // Score and sort stations based on match quality
+        let scoredStations = allStations.map { station -> (Station, Double) in
+            var score = 0.0
+            
+            // Normalize station name for comparison
+            let normalizedName = station.name.lowercased()
+            let normalizedCRS = station.id.lowercased()
+            
+            // Exact matches get highest score
+            if normalizedName == normalizedQuery {
+                score += 100
+            } else if normalizedCRS == normalizedQuery {
+                score += 100
+            }
+            
+            // CRS code partial matches
+            if normalizedQuery.count <= 3 && normalizedCRS.starts(with: normalizedQuery) {
+                score += 75
+            }
+            
+            // Station name starts with query
+            if normalizedName.starts(with: normalizedQuery) {
+                score += 50
+            }
+            
+            // Words in station name start with query
+            let stationWords = normalizedName.split(separator: " ")
+            if stationWords.contains(where: { $0.starts(with: normalizedQuery) }) {
+                score += 25
+            }
+            
+            // Partial matches anywhere in the name
+            if normalizedName.contains(normalizedQuery) {
+                score += 10
+            }
+            
+            return (station, score)
+        }
+        
+        // Filter out non-matches and sort by score
+        return scoredStations
+            .filter { $0.1 > 0 }
+            .sorted { $0.1 > $1.1 }
+            .map { $0.0 }
+    }
+}

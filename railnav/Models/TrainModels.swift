@@ -2,25 +2,6 @@ import Foundation
 
 // MARK: - Base Models
 
-struct Station: Identifiable {
-    let id: String  // CRS Code
-    let name: String
-    let manager: String?  // Station manager (usually TOC name)
-    let managerCode: String?
-    let isPlatformsHidden: Bool
-    let isServicesAvailable: Bool
-    
-    // Convenience initializer for basic station
-    init(id: String, name: String) {
-        self.id = id
-        self.name = name
-        self.manager = nil
-        self.managerCode = nil
-        self.isPlatformsHidden = false
-        self.isServicesAvailable = true
-    }
-}
-
 enum ServiceStatus: String, Codable {
     case onTime = "On time"
     case delayed = "Delayed"
@@ -203,7 +184,23 @@ extension Date {
 
 extension DomainStation {
     func toAppModel() -> Station {
-        Station(id: id, name: name)
+        // Find the station details from our station list
+        if let stationDetails = Stationcodelist.stations.first(where: { $0.crsCode == id }) {
+            return Station(
+                id: id,
+                name: name,
+                latitude: stationDetails.latitude,
+                longitude: stationDetails.longitude,
+                iataAirportCode: stationDetails.iataAirportCode
+            )
+        }
+        // Fallback to a default location (London) if we can't find the station
+        return Station(
+            id: id,
+            name: name,
+            latitude: 51.5074,
+            longitude: -0.1278
+        )
     }
 }
 

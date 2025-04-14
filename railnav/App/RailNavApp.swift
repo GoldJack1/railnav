@@ -37,8 +37,38 @@ struct MainView: View {
                     case .tickets:
                         TicketsView(selectedTab: $selectedTab)
                             .smartTransition(for: .tickets, selectedTab: selectedTab, previousTab: previousTab)
-                    @unknown default:
-                        EmptyView()
+                    case .back:
+                        Group {
+                            if isShowingDetail {
+                                HomeView(selectedTab: $selectedTab, isShowingDetail: $isShowingDetail)
+                                    .onAppear {
+                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                            isShowingDetail = false
+                                        }
+                                    }
+                            } else {
+                                let targetTab = previousTab ?? .home
+                                Group {
+                                    if targetTab == .home {
+                                        HomeView(selectedTab: $selectedTab, isShowingDetail: $isShowingDetail)
+                                    } else if targetTab == .explore {
+                                        ExploreView(selectedTab: $selectedTab)
+                                    } else if targetTab == .navigate {
+                                        NavigateView(selectedTab: $selectedTab)
+                                    } else if targetTab == .tickets {
+                                        TicketsView(selectedTab: $selectedTab)
+                                    } else {
+                                        HomeView(selectedTab: $selectedTab, isShowingDetail: $isShowingDetail)
+                                    }
+                                }
+                                .onAppear {
+                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                        selectedTab = targetTab
+                                    }
+                                }
+                            }
+                        }
+                        .smartTransition(for: .back, selectedTab: selectedTab, previousTab: previousTab)
                     }
                 } else {
                     // Detail view
@@ -71,9 +101,9 @@ struct MainView: View {
                 }
                 .ignoresSafeArea()
             }
-            .onChange(of: selectedTab) { newValue in
+            .onChange(of: selectedTab) { oldValue, newValue in
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.8, blendDuration: 0.2)) {
-                    previousTab = selectedTab
+                    previousTab = oldValue
                     selectedTab = newValue
                 }
             }
